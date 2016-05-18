@@ -90,7 +90,6 @@ public class SelectDeviceActivity extends BaseActivity implements NavigationView
         View headView = navigationView.getHeaderView(0);
         ImageView imageView = (ImageView) headView.findViewById(R.id.backImg);
         imageView.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 mDrawer.closeDrawer(GravityCompat.START);

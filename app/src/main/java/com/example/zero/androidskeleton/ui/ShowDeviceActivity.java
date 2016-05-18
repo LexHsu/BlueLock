@@ -59,13 +59,21 @@ public class ShowDeviceActivity extends BaseActivity implements NavigationView.O
         android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.activity_show_device_toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout_show);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout_show);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view_show);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        View headView = navigationView.getHeaderView(0);
+        ImageView imageView = (ImageView) headView.findViewById(R.id.backImg);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        });
 
         Intent intent = getIntent();
         if (intent == null || intent.getExtras() == null) {
@@ -91,6 +99,8 @@ public class ShowDeviceActivity extends BaseActivity implements NavigationView.O
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mVibrator = (Vibrator) getSystemService(Service.VIBRATOR_SERVICE);
+
+        mDevice.addDeviceListener(this);
     }
 
     private void setupUiComp() {
@@ -198,9 +208,6 @@ public class ShowDeviceActivity extends BaseActivity implements NavigationView.O
 
         Log.i(TAG, "onResume");
 
-        if (mDevice != null) {
-            mDevice.addDeviceListener(this);
-        }
         mSensorManager.unregisterListener(this);
 
         mUnlockImg.setImageResource(getUnlockImage());
@@ -272,15 +279,20 @@ public class ShowDeviceActivity extends BaseActivity implements NavigationView.O
 
     @Override
     protected void onPause() {
-        if (mDevice != null) {
-            mDevice.removeDeviceListener(this);
-            mDevice.disconnectGatt();
-        }
         mSensorManager.registerListener(
             this,
             mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
             SensorManager.SENSOR_DELAY_NORMAL);
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mDevice != null) {
+            mDevice.removeDeviceListener(this);
+            mDevice.disconnectGatt();
+        }
+        super.onDestroy();
     }
 
     private void unlock(String password) {
